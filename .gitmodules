@@ -1,0 +1,6 @@
+[submodule "front"]
+	path = front
+	url = git@github.com:ESI4-2024-2025/command_craftor.git
+[submodule "back"]
+	path = back
+	url = git@github.com:ESI4-2024-2025/command_craftor_API.git
