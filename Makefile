@@ -7,6 +7,7 @@ install: build start ## Installs and starts project
 .PHONY: start
 start: ## Start project
 	@$(COMPOSE) up -d --remove-orphans
+	@echo -e "\e[35m\nIndex :  http://localhost:3000\e[0m"
 
 .PHONY: stop
 stop: ## Stop project
