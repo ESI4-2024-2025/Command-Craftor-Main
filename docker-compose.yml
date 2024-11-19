@@ -1,0 +1,19 @@
+services:
+  front:
+    build: ./front
+    volumes:
+      - ./front:/app
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./front/.env
+    command: sh -c "npm install && npm start"
+  back:
+    build: ./back
+    volumes:
+      - ./back:/app
+    ports:
+      - "60:60"
+    env_file:
+      - ./back/.env
+    command: sh -c "npm install && npm start"
