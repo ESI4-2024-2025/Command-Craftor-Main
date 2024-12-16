@@ -1,0 +1,104 @@
+name: Build and Deploy Front and Back
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*' # Déclenche l'exécution uniquement pour les tags qui commencent par "v"
+
+jobs:
+  build-and-deploy-front:
+    name: Build and Deploy Front
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout du code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Installer Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Version de Node.js
+
+      # 3. Installer les dépendances et builder
+      - name: Install dependencies and build
+        run: |
+          cd front
+          npm install
+          npm run build
+
+      # 4. Zipper le build
+      - name: Zip build
+        run: |
+          cd front/build
+          zip -r ../../front_build.zip .
+
+      # 5. Transférer le fichier zippé sur le VPS
+      - name: Transfer build to VPS
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: ./front_build.zip
+          target: ~/CommandCraftor/front_build.zip
+
+      # 6. Exécuter le script de déploiement sur le VPS
+      - name: Deploy front on VPS
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            bash ~/scripts/deploy_commandCraftor_front.sh
+
+  build-and-deploy-back:
+    name: Build and Deploy Back
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout du code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Installer Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Version de Node.js
+
+      # 3. Installer les dépendances et builder
+      - name: Install dependencies and build
+        run: |
+          cd back
+          npm install
+          npm run build || echo "No build script, skipping."
+
+      # 4. Zipper le back
+      - name: Zip back
+        run: |
+          cd back
+          zip -r ../back_build.zip .
+
+      # 5. Transférer le fichier zippé sur le VPS
+      - name: Transfer back to VPS
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: ./back_build.zip
+          target: ~/CommandCraftor/back_build.zip
+
+      # 6. Exécuter le script de déploiement sur le VPS
+      - name: Deploy back on VPS
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            bash ~/scripts/deploy_commandCraftor_back.sh
