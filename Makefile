@@ -1,8 +1,31 @@
 DOCKER=docker
+DOCKER_CMD=docker exec
+DOCKER_CLI=docker exec -it
 COMPOSE=docker compose
 
 .PHONY: install
-install: build start ## Installs and starts project
+install: build install-packages ## Installs and starts project
+
+.PHONY: build
+build: build-front build-back ## Builds images
+
+.PHONY: build-front
+build-front: ## Builds front image
+	@$(DOCKER) build front
+
+.PHONY: build-back
+build-back: ## Builds back image
+	@$(DOCKER) build back
+
+.PHONY: install-packages
+install-packages: install-packages-front install-packages-back
+
+.PHONY: install-packages-front
+install-packages-front: start
+	@$(DOCKER_CMD) command-craftor-main-front-1 npm install
+
+install-packages-back: start
+	@$(DOCKER_CMD) command-craftor-main-back-1 npm install
 
 .PHONY: start
 start: ## Start project
@@ -16,13 +39,8 @@ stop: ## Stop project
 .PHONY: restart
 restart: stop start ## Restart project
 
-.PHONY: build
-build: build-front build-back ## Builds images
+bash-front: start
+	@$(DOCKER_CLI) command-craftor-main-front-1 /bin/sh
 
-.PHONY: build-front
-build-front: ## Builds front image
-	@$(DOCKER) build front
-
-.PHONY: build-back
-build-back: ## Builds back image
-	@$(DOCKER) build back
+bash-back: start
+	@$(DOCKER_CLI) command-craftor-main-back-1 /bin/sh
