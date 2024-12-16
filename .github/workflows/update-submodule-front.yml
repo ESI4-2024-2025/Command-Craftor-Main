@@ -1,0 +1,26 @@
+name: Update Submodule Front
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Update submodule front
+        run: |
+          git submodule update --remote --merge
+          git add .
+          git commit -m "Update submodule front to latest commit"
+          git push origin main
