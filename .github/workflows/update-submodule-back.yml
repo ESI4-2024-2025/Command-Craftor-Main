@@ -1,10 +1,10 @@
-name: Update Submodule Front
+name: Update Submodule Back
 
 on:
   workflow_dispatch:
 
 jobs:
-  update-front-submodule:
+  update-back-submodule:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,14 +13,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Update front submodule
+      - name: Update back submodule
         run: |
-          cd submodules/front
+          cd submodules/back
           git fetch
           git checkout main
           cd -
-          git add submodules/front
-          git commit -m "Updated submodule 'front' to latest commit" || echo "No changes to commit"
+          git add submodules/back
+          git commit -m "Updated submodule 'back' to latest commit" || echo "No changes to commit"
 
       - name: Push updates
         env:
