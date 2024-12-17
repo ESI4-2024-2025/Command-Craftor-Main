@@ -21,7 +21,7 @@ jobs:
         shell: bash
         run: |
           mkdir $SOURCES_DIR
-          cp delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
+          cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
@@ -43,7 +43,7 @@ jobs:
         shell: bash
         run: |
           mkdir $SOURCES_DIR
-          cp delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
+          cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
       - name: Upload back package artifact
         uses: actions/upload-artifact@v4
