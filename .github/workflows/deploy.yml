@@ -5,6 +5,7 @@ on:
   push:
     tags:
       - '^v[0-9]+.[0-9]+.[0-9]+' # Déclenche l'exécution uniquement pour les tags qui commencent par "v" et on 3 nombre avec un point entre chaque
+      - '^snapshot-*'
 
 env:
   ARTIFACTS_PATH: ${{ github.workspace }}/artifacts
@@ -28,7 +29,7 @@ jobs:
           tar -hpczf ${PACKAGE} --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
           mkdir ${ARTIFACTS_PATH}
           cp ${PACKAGE} ${ARTIFACTS_PATH}
-          ls -la ${{ github.workspace }}/artifacts
+          ls -la ${ARTIFACTS_PATH}
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
         with:
