@@ -21,6 +21,7 @@ jobs:
       - name: Build package for front
         shell: bash
         run: |
+          echo $PWD
           mkdir $SOURCES_DIR
           cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
