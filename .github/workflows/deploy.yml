@@ -16,26 +16,25 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: front
-      PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
-      PACKAGE: $PACKAGE_NAME.tar.gz
+      PACKAGE_NAME: ${TARGET_DIR}-${{ github.ref_name }}
+      PACKAGE: ${PACKAGE_NAME}.tar.gz
     steps:
       - uses: actions/checkout@v1
       - name: Build package for front
         shell: bash
         run: |
-          echo $PWD
-          mkdir $SOURCES_DIR
-          cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
-          tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
-          mkdir $ARTIFACTS_PATH
-          cp $PACKAGE $ARTIFACTS_PATH
+          mkdir ${SOURCES_DIR}
+          cp -r delivery/delivery-${TARGET_DIR}.sh ${TARGET_DIR} ${SOURCES_DIR}
+          tar -hpczf ${PACKAGE} --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
+          mkdir ${ARTIFACTS_PATH}
+          cp ${PACKAGE} ${ARTIFACTS_PATH}
           ls -la ${{ github.workspace }}/artifacts
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
-          name: $PACKAGE_NAME
-          path: ${{ github.workspace }}/artifacts/$PACKAGE
+          name: ${PACKAGE_NAME}
+          path: ${ARTIFACTS_PATH}/${PACKAGE}
 
   package-back:
     name: Package Back
