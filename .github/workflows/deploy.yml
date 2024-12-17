@@ -11,6 +11,7 @@ jobs:
     name: Package Front
     runs-on: ubuntu-latest
     env:
+      ARTIFACTS_PATH: build
       SOURCES_DIR: sources
       TARGET_DIR: front
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
@@ -23,16 +24,18 @@ jobs:
           mkdir $SOURCES_DIR
           cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
+          cp $PACKAGE $ARTIFACTS_PATH
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
         with:
           name: $PACKAGE_NAME
-          path: $PACKAGE
+          path: $ARTIFACTS_PATH
 
   package-back:
     name: Package Back
     runs-on: ubuntu-latest
     env:
+      ARTIFACTS_PATH: build
       SOURCES_DIR: sources
       TARGET_DIR: back
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
@@ -45,11 +48,12 @@ jobs:
           mkdir $SOURCES_DIR
           cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
+          cp $PACKAGE $ARTIFACTS_PATH
       - name: Upload back package artifact
         uses: actions/upload-artifact@v4
         with:
           name: $PACKAGE_NAME
-          path: $PACKAGE
+          path: $ARTIFACTS_PATH
 
   deploy-front:
     name: Deploy Front
@@ -57,6 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: front
+      ARTIFACTS_PATH: build
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
       PACKAGE: $PACKAGE_NAME.tar.gz
     steps:
@@ -84,6 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: back
+      ARTIFACTS_PATH: build
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
       PACKAGE: $PACKAGE_NAME.tar.gz
     steps:
