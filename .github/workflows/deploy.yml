@@ -11,7 +11,7 @@ jobs:
     name: Package Front
     runs-on: ubuntu-latest
     env:
-      ARTIFACTS_PATH: build
+      ARTIFACTS_PATH: /artifacts
       SOURCES_DIR: sources
       TARGET_DIR: front
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
@@ -24,6 +24,7 @@ jobs:
           mkdir $SOURCES_DIR
           cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
+          mkdir $ARTIFACTS_PATH
           cp $PACKAGE $ARTIFACTS_PATH
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
@@ -35,7 +36,7 @@ jobs:
     name: Package Back
     runs-on: ubuntu-latest
     env:
-      ARTIFACTS_PATH: build
+      ARTIFACTS_PATH: /artifacts
       SOURCES_DIR: sources
       TARGET_DIR: back
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
@@ -48,6 +49,7 @@ jobs:
           mkdir $SOURCES_DIR
           cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
+          mkdir $ARTIFACTS_PATH
           cp $PACKAGE $ARTIFACTS_PATH
       - name: Upload back package artifact
         uses: actions/upload-artifact@v4
@@ -61,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: front
-      ARTIFACTS_PATH: build
+      ARTIFACTS_PATH: /artifacts
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
       PACKAGE: $PACKAGE_NAME.tar.gz
     steps:
@@ -70,7 +72,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: $PACKAGE_NAME
-          path: $ARTIFACTS_PATH
+          path: $ARTIFACTS_PATH/$PACKAGE
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -89,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: back
-      ARTIFACTS_PATH: build
+      ARTIFACTS_PATH: /artifacts
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
       PACKAGE: $PACKAGE_NAME.tar.gz
     steps:
@@ -98,7 +100,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: $PACKAGE_NAME
-          path: $ARTIFACTS_PATH
+          path: $ARTIFACTS_PATH/$PACKAGE
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
