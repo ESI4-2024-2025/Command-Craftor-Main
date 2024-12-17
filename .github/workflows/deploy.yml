@@ -16,11 +16,11 @@ jobs:
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
       PACKAGE: $PACKAGE_NAME.tar.gz
     steps:
+      - uses: actions/checkout@v1
       - name: Build package for front
         shell: bash
         run: |
           mkdir $SOURCES_DIR
-          ls -la
           cp delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
       - name: Upload front package artifact
@@ -38,11 +38,11 @@ jobs:
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
       PACKAGE: $PACKAGE_NAME.tar.gz
     steps:
+      - uses: actions/checkout@v1
       - name: Build package for back
         shell: bash
         run: |
           mkdir $SOURCES_DIR
-          ls -la
           cp delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
       - name: Upload back package artifact
@@ -60,6 +60,7 @@ jobs:
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
       PACKAGE: $PACKAGE_NAME.tar.gz
     steps:
+      - uses: actions/checkout@v1
       - name: Download front package artifact
         uses: actions/download-artifact@v4
         with:
@@ -86,6 +87,7 @@ jobs:
       PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
       PACKAGE: $PACKAGE_NAME.tar.gz
     steps:
+      - uses: actions/checkout@v1
       - name: Download back package artifact
         uses: actions/download-artifact@v4
         with:
@@ -113,6 +115,7 @@ jobs:
       SCRIPT_NAME: restart-services.sh
       SCRIPT_PATH: delivery/$SCRIPT_NAME
     steps:
+      - uses: actions/checkout@v1
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
