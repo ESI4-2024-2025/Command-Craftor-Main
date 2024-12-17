@@ -29,7 +29,7 @@ jobs:
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
           mkdir $ARTIFACTS_PATH
           cp $PACKAGE $ARTIFACTS_PATH
-          ll ${{ github.workspace }}/artifacts
+          ls -la ${{ github.workspace }}/artifacts
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
         with:
