@@ -29,12 +29,13 @@ jobs:
           tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
           mkdir $ARTIFACTS_PATH
           cp $PACKAGE $ARTIFACTS_PATH
+          ll ${{ github.workspace }}/artifacts
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
           name: $PACKAGE_NAME
-          path: $ARTIFACTS_PATH/$PACKAGE
+          path: ${{ github.workspace }}/artifacts/$PACKAGE
 
   package-back:
     name: Package Back
