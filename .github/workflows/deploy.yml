@@ -7,7 +7,7 @@ on:
       - '^v[0-9]+.[0-9]+.[0-9]+' # Déclenche l'exécution uniquement pour les tags qui commencent par "v" et on 3 nombre avec un point entre chaque
 
 env:
-  ARTIFACTS_PATH: /home/runner/work/Command-Craftor-Main/artifacts
+  ARTIFACTS_PATH: ${{ github.workspace }}/artifacts
   SOURCES_DIR: sources
 
 jobs:
@@ -32,6 +32,7 @@ jobs:
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: $PACKAGE_NAME
           path: $ARTIFACTS_PATH/$PACKAGE
 
@@ -55,6 +56,7 @@ jobs:
       - name: Upload back package artifact
         uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: $PACKAGE_NAME
           path: $ARTIFACTS_PATH/$PACKAGE
 
