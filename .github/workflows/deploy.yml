@@ -33,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: $PACKAGE_NAME
-          path: $ARTIFACTS_PATH
+          path: $ARTIFACTS_PATH/$PACKAGE
 
   package-back:
     name: Package Back
@@ -56,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: $PACKAGE_NAME
-          path: $ARTIFACTS_PATH
+          path: $ARTIFACTS_PATH/$PACKAGE
 
   deploy-front:
     name: Deploy Front
