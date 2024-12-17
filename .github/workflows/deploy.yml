@@ -103,6 +103,7 @@ jobs:
 
   restart-services:
     name: Restart Services
+    runs-on: ubuntu-latest
     needs:
       - deploy-back
       - deploy-front
