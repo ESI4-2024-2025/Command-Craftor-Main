@@ -94,6 +94,9 @@ jobs:
         run: |
           PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
           PACKAGE=${PACKAGE_NAME}.tar.gz
+          ls -la
+          ls -la "${ARTIFACTS_PATH}"
+          ls -la "${ARTIFACTS_PATH}/${PACKAGE}"
           scp "${ARTIFACTS_PATH}/${PACKAGE}" "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME} && ./delivery-${TARGET_DIR}.sh"
 
