@@ -23,4 +23,4 @@ BACK_DIR=/commandCraftor/command_craftor_API
 echo_and_log "Restarting services"
 _e cd "${BACK_DIR}" || exit 1
 _e systemctl restart nginx || exit 1
-_e nohup node index.js > /dev/null 2>&1 & || exit 1
+_e nohup node index.js > /dev/null 2>&1 &

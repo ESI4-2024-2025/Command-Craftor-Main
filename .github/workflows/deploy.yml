@@ -106,7 +106,7 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             rm -rf /commandCraftor/sources/front/sources
-            cp /commandCraftor/sources/github/workspace/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/front && cd /commandCraftor/sources/front
+            mv /commandCraftor/sources/github/workspace/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/front && cd /commandCraftor/sources/front
             tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
             /commandCraftor/sources/front/sources/delivery-front.sh
 
@@ -140,7 +140,7 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             rm -rf /commandCraftor/sources/back/sources
-            cp /commandCraftor/sources/github/workspace/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/back
+            mv /commandCraftor/sources/github/workspace/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/back
             cd /commandCraftor/sources/back
             tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
             /commandCraftor/sources/back/sources/delivery-back.sh
@@ -165,9 +165,12 @@ jobs:
           source: ${{ github.workspace }}/delivery/restart-services.sh
           target: "/commandCraftor/sources"
       - name: Deploy package on VPS
-        uses: garygrossgarten/github-action-ssh@0.8.0
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          command: "cd /commandCraftor/sources && rm ./restart-services.sh && mv github/workspace/delivery/restart-services.sh . && ./restart-services.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd /commandCraftor/sources
+            mv ./github/workspace/delivery/restart-services.sh .
+            ./restart-services.sh"
