@@ -14,49 +14,46 @@ jobs:
   package-front:
     name: Package Front
     runs-on: ubuntu-latest
+    env:
+      TARGET_DIR: front
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
       - name: Generate slug variables
         uses: rlespinasse/github-slug-action@v5.0.0
-      - name: Setup variables
-        run: |
-          export TARGET_DIR=front
-          export PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
-          export PACKAGE=${PACKAGE_NAME}.tar.gz
       - name: Build package for front
         shell: bash
         run: |
+          PACKAGE=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
           mkdir ${SOURCES_DIR}
-          ls -la
           cp -r delivery/delivery-${TARGET_DIR}.sh ${TARGET_DIR} ${SOURCES_DIR}
           tar -hpczf "${PACKAGE}" --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
           mkdir "${ARTIFACTS_PATH}"
           cp "${PACKAGE}" "${ARTIFACTS_PATH}"
-          ls -la ${ARTIFACTS_PATH}
+          rsync --help
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
+        env:
+          PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
         with:
           if-no-files-found: error
           name: ${PACKAGE_NAME}
-          path: ${ARTIFACTS_PATH}/${PACKAGE}
+          path: ${ARTIFACTS_PATH}/${PACKAGE_NAME}.tar.gz
 
   package-back:
     name: Package Back
     runs-on: ubuntu-latest
+    env:
+      TARGET_DIR: back
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
       - name: Generate slug variables
         uses: rlespinasse/github-slug-action@v5.0.0
-      - name: Setup variables
-        run: |
-          export TARGET_DIR=back
-          export PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
-          export PACKAGE=${PACKAGE_NAME}.tar.gz
       - name: Build package for back
         shell: bash
         run: |
+          PACKAGE=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
           mkdir ${SOURCES_DIR}
           cp -r delivery/delivery-${TARGET_DIR}.sh ${TARGET_DIR} ${SOURCES_DIR}
           tar -hpczf ${PACKAGE} --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
@@ -64,71 +61,71 @@ jobs:
           cp ${PACKAGE} ${ARTIFACTS_PATH}
       - name: Upload back package artifact
         uses: actions/upload-artifact@v4
+        env:
+          PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
         with:
           if-no-files-found: error
-          name: $PACKAGE_NAME
-          path: $ARTIFACTS_PATH/$PACKAGE
+          name: ${PACKAGE_NAME}
+          path: ${ARTIFACTS_PATH}/${PACKAGE_NAME}.tar.gz
 
   deploy-front:
     name: Deploy Front
     needs: package-front
     runs-on: ubuntu-latest
+    env:
+      TARGET_DIR: front
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
       - name: Generate slug variables
         uses: rlespinasse/github-slug-action@v5.0.0
-      - name: Setup variables
-        run: |
-          export TARGET_DIR=front
-          export PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
-          export PACKAGE=${PACKAGE_NAME}.tar.gz
       - name: Download front package artifact
         uses: actions/download-artifact@v4
+        env:
+          PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
         with:
           name: ${PACKAGE_NAME}
-          path: ${ARTIFACTS_PATH}/${PACKAGE}
+          path: ${ARTIFACTS_PATH}/${PACKAGE_NAME}.tar.gz
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
           if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
           echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add -
-      - name: Push package to VPS
+      - name: Deploy package on VPS
         run: |
-          scp $PACKAGE "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
-      - name: Deploy package
-        run: |
+          PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
+          PACKAGE=${PACKAGE_NAME}.tar.gz
+          scp ${PACKAGE} "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME} && ./delivery-${TARGET_DIR}.sh"
 
   deploy-back:
     name: Deploy Back
     needs: package-back
     runs-on: ubuntu-latest
+    env:
+      TARGET_DIR: back
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
       - name: Generate slug variables
         uses: rlespinasse/github-slug-action@v5.0.0
-      - name: Setup variables
-        run: |
-          export TARGET_DIR=back
-          export PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
-          export PACKAGE=${PACKAGE_NAME}.tar.gz
       - name: Download back package artifact
         uses: actions/download-artifact@v4
+        env:
+          PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
         with:
           name: ${PACKAGE_NAME}
-          path: ${ARTIFACTS_PATH}/${PACKAGE}
+          path: ${ARTIFACTS_PATH}/${PACKAGE_NAME}.tar.gz
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
           if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
           echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add -
-      - name: Push package to VPS
+      - name: Deploy package on VPS
         run: |
-          scp $PACKAGE "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
-      - name: Deploy package
-        run: |
+          PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
+          PACKAGE=${PACKAGE_NAME}.tar.gz
+          scp ${PACKAGE} "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME} && ./delivery-${TARGET_DIR}.sh"
 
   restart-services:
@@ -137,13 +134,11 @@ jobs:
     needs:
       - deploy-back
       - deploy-front
+    env:
+      SCRIPT_NAME: restart-services.sh
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
-      - name: Setup variables
-        run: |
-          export SCRIPT_NAME=restart-services.sh
-          export SCRIPT_PATH=delivery/${SCRIPT_NAME}
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -151,7 +146,7 @@ jobs:
           echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add -
       - name: Push package to VPS
         run: |
-          scp ${SCRIPT_PATH} "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
+          scp delivery/${SCRIPT_NAME} "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
       - name: Deploy package
         run: |
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "./${SCRIPT_NAME}"
