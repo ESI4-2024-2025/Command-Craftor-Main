@@ -164,7 +164,7 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           source: ${{ github.workspace }}/delivery/restart-services.sh
           target: "/commandCraftor/sources"
-      - name: Deploy package on VPS
+      - name: Restart services on VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -173,4 +173,4 @@ jobs:
           script: |
             cd /commandCraftor/sources
             mv ./github/workspace/delivery/restart-services.sh .
-            ./restart-services.sh"
+            ./restart-services.sh
