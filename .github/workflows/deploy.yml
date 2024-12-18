@@ -92,7 +92,7 @@ jobs:
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
         with:
-          command: "cd /commandCraftor/sources/github/workflow/artifacts && tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./front-${{ env.GITHUB_REF_SLUG_URL }}/sources && ./delivery-front.sh"
+          command: "cd /commandCraftor/sources/github/workspace/artifacts && tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./front-${{ env.GITHUB_REF_SLUG_URL }}/sources && ./delivery-front.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
@@ -122,7 +122,7 @@ jobs:
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
         with:
-          command: "cd /commandCraftor/sources/github/workflow/artifacts && tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./back-${{ env.GITHUB_REF_SLUG_URL }}/sources && ./delivery-back.sh"
+          command: "cd /commandCraftor/sources/github/workspace/artifacts && tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./back-${{ env.GITHUB_REF_SLUG_URL }}/sources && ./delivery-back.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
@@ -149,7 +149,7 @@ jobs:
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
         with:
-          command: "cd /commandCraftor/sources/github/workflow/delivery && ./restart-services.sh"
+          command: "cd /commandCraftor/sources/github/workspace/delivery && ./restart-services.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
