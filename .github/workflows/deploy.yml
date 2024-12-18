@@ -27,9 +27,9 @@ jobs:
           mkdir ${SOURCES_DIR}
           ls -la
           cp -r delivery/delivery-${TARGET_DIR}.sh ${TARGET_DIR} ${SOURCES_DIR}
-          tar -hpczf ${PACKAGE} --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
-          mkdir ${ARTIFACTS_PATH}
-          cp ${PACKAGE} ${ARTIFACTS_PATH}
+          tar -hpczf "${SOURCES_DIR}" --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${PACKAGE}"
+          mkdir "${ARTIFACTS_PATH}"
+          cp "${PACKAGE}" "${ARTIFACTS_PATH}"
           ls -la ${ARTIFACTS_PATH}
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
