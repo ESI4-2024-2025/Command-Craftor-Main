@@ -15,13 +15,16 @@ jobs:
   package-front:
     name: Package Front
     runs-on: ubuntu-latest
-    env:
-      TARGET_DIR: front
-      PACKAGE_NAME: front-${{ github.ref_name }}
-      PACKAGE: front-${{ github.ref_name }}.tar.gz
     steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Checkout project
+        uses: actions/checkout@v4.2.2
+      - name: Generate slug variables
+        uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Setup variables
+        run: |
+          export TARGET_DIR=front
+          export PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
+          export PACKAGE=${PACKAGE_NAME}.tar.gz
       - name: Build package for front
         shell: bash
         run: |
@@ -42,12 +45,16 @@ jobs:
   package-back:
     name: Package Back
     runs-on: ubuntu-latest
-    env:
-      TARGET_DIR: back
-      PACKAGE_NAME: back-${{ github.ref_name }}
-      PACKAGE: back-${{ github.ref_name }}.tar.gz
     steps:
-      - uses: actions/checkout@v4.2.2
+      - name: Checkout project
+        uses: actions/checkout@v4.2.2
+      - name: Generate slug variables
+        uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Setup variables
+        run: |
+          export TARGET_DIR=back
+          export PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
+          export PACKAGE=${PACKAGE_NAME}.tar.gz
       - name: Build package for back
         shell: bash
         run: |
@@ -67,12 +74,16 @@ jobs:
     name: Deploy Front
     needs: package-front
     runs-on: ubuntu-latest
-    env:
-      TARGET_DIR: front
-      PACKAGE_NAME: front-${{ github.ref_name }}
-      PACKAGE: front-${{ github.ref_name }}.tar.gz
     steps:
-      - uses: actions/checkout@v4.2.2
+      - name: Checkout project
+        uses: actions/checkout@v4.2.2
+      - name: Generate slug variables
+        uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Setup variables
+        run: |
+          export TARGET_DIR=front
+          export PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
+          export PACKAGE=${PACKAGE_NAME}.tar.gz
       - name: Download front package artifact
         uses: actions/download-artifact@v4
         with:
@@ -94,12 +105,16 @@ jobs:
     name: Deploy Back
     needs: package-back
     runs-on: ubuntu-latest
-    env:
-      TARGET_DIR: back
-      PACKAGE_NAME: back-${{ github.ref_name }}
-      PACKAGE: back-${{ github.ref_name }}.tar.gz
     steps:
-      - uses: actions/checkout@v4.2.2
+      - name: Checkout project
+        uses: actions/checkout@v4.2.2
+      - name: Generate slug variables
+        uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Setup variables
+        run: |
+          export TARGET_DIR=back
+          export PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
+          export PACKAGE=${PACKAGE_NAME}.tar.gz
       - name: Download back package artifact
         uses: actions/download-artifact@v4
         with:
@@ -123,11 +138,13 @@ jobs:
     needs:
       - deploy-back
       - deploy-front
-    env:
-      SCRIPT_NAME: restart-services.sh
-      SCRIPT_PATH: delivery/restart-services.sh
     steps:
-      - uses: actions/checkout@v4.2.2
+      - name: Checkout project
+        uses: actions/checkout@v4.2.2
+      - name: Setup variables
+        run: |
+          export SCRIPT_NAME=restart-services.sh
+          export SCRIPT_PATH=delivery/${SCRIPT_NAME}
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
