@@ -81,18 +81,21 @@ jobs:
         with:
           name: front-${{ env.GITHUB_REF_SLUG_URL }}
           path: ${{ github.workspace }}/artifacts
+      - name: Transfer package to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+          target: "/commandCraftor/sources"
       - name: Deploy package on VPS
-        run: |
-          test -d ~/.ssh || mkdir ~/.ssh
-          rm -rf ~/.ssh/*
-          eval $(ssh-agent -s)
-          if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
-          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
-
-          PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
-          PACKAGE=${PACKAGE_NAME}.tar.gz
-          scp "${ARTIFACTS_PATH}/${PACKAGE}" "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
-          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME}/${SOURCES_DIR} && ./delivery-${TARGET_DIR}.sh"
+        uses: garygrossgarten/github-action-ssh@0.8.0
+        with:
+          command: "tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./front-${{ env.GITHUB_REF_SLUG_URL }}/sources && ./delivery-front.sh"
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
 
   deploy-back:
     name: Deploy Back
@@ -108,18 +111,21 @@ jobs:
         with:
           name: back-${{ env.GITHUB_REF_SLUG_URL }}
           path: ${{ github.workspace }}/artifacts
+      - name: Transfer package to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+          target: "/commandCraftor/sources"
       - name: Deploy package on VPS
-        run: |
-          test -d ~/.ssh || mkdir ~/.ssh
-          rm -rf ~/.ssh/*
-          eval $(ssh-agent -s)
-          if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
-          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
-
-          PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
-          PACKAGE=${PACKAGE_NAME}.tar.gz
-          scp "${ARTIFACTS_PATH}/${PACKAGE}" "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
-          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME}/${SOURCES_DIR} && ./delivery-${TARGET_DIR}.sh"
+        uses: garygrossgarten/github-action-ssh@0.8.0
+        with:
+          command: "cd /commandCraftor/sources && tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./back-${{ env.GITHUB_REF_SLUG_URL }}/sources && ./delivery-back.sh"
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
 
   restart-services:
     name: Restart Services
@@ -132,13 +138,18 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
-      - name: Restart services on VPS
-        run: |
-          test -d ~/.ssh || mkdir ~/.ssh
-          rm -rf ~/.ssh/*
-          eval $(ssh-agent -s)
-          if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
-          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
-
-          scp delivery/${SCRIPT_NAME} "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
-          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "./${SCRIPT_NAME}"
+      - name: Transfer restart-service script to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: ${{ github.workspace }}/delivery/restart-services.sh
+          target: "/commandCraftor/sources"
+      - name: Deploy package on VPS
+        uses: garygrossgarten/github-action-ssh@0.8.0
+        with:
+          command: "cd /commandCraftor/sources && ./restart-services.sh"
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
