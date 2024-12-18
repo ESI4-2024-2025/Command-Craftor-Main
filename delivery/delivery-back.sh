@@ -29,14 +29,17 @@ else
     _e touch "${SOURCES_DIR}/delivery.lock" || exit 1
 fi
 
-echo_and_log "Stopping back process..."
-_e fuser -k 3002/tcp || true
+if lsof -Pi :3002 -sTCP:LISTEN
+then
+  echo_and_log "Stopping back process..."
+  _e fuser -k 3002/tcp || exit 1
+fi
 
 echo_and_log "Copying sources into ${RUN_DIR}..."
 _e rsync -rt --partial --delete-after --exclude='.env' "${SOURCES_DIR}/" "${RUN_DIR}/" || exit 1
 
 echo_and_log "Installing dependencies"
 _e pushd "${DEST_DIR}" &> /dev/null || exit 1
-_e npm install || exit 1
+_e npm install --omit=dev || exit 1
 
 _e rm "${SOURCES_DIR}/delivery.lock" || exit 1
