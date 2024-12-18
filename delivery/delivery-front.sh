@@ -32,14 +32,14 @@ fi
 
 
 echo_and_log "Copying sources into ${RUN_DIR}..."
-_e rsync -rt --partial --delete-after --exclude='.env' "${SOURCES_DIR}" "${RUN_DIR}" || exit 1
+_e rsync -rt --partial --delete-after --exclude='.env' "${SOURCES_DIR}/" "${RUN_DIR}/" || exit 1
 
 echo_and_log "Installing dependencies"
 _e pushd "${RUN_DIR}" &> /dev/null || exit 1
 _e npm install || exit 1
 
 _e npm run build || exit 1
-_e rsync -rt --partial --delete-after build/* "${NGINX_DIR}" || exit 1
+_e rsync -rt --partial --delete-after build/ "${NGINX_DIR}"/ || exit 1
 
 _e popd &> /dev/null || exit 1
 

@@ -24,12 +24,12 @@ jobs:
       - name: Build package for front
         shell: bash
         run: |
-          PACKAGE=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
-          mkdir ${SOURCES_DIR}
-          rsync -rvt --partial --exclude='.github' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' ${TARGET_DIR} ${SOURCES_DIR}
-          cp delivery/delivery-${TARGET_DIR}.sh ${SOURCES_DIR}
-          ls -la ${SOURCES_DIR}
-          tar hpczf "${PACKAGE}" --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
+          PACKAGE="${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz"
+          mkdir "${SOURCES_DIR}"
+          rsync -rvt --exclude='.git' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' "${TARGET_DIR}/" "${SOURCES_DIR}/"
+          cp "delivery/delivery-${TARGET_DIR}.sh" "${SOURCES_DIR}"
+          ls -la "${SOURCES_DIR}"
+          tar hpczf "${PACKAGE}" "${SOURCES_DIR}"
           mkdir "${ARTIFACTS_PATH}"
           cp "${PACKAGE}" "${ARTIFACTS_PATH}"
       - name: Upload front package artifact
@@ -52,14 +52,15 @@ jobs:
       - name: Build package for back
         shell: bash
         run: |
-          PACKAGE=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
-          mkdir ${SOURCES_DIR}
-          rsync -rvt --partial --exclude='.github' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' ${TARGET_DIR} ${SOURCES_DIR}
-          cp delivery/delivery-${TARGET_DIR}.sh ${SOURCES_DIR}
-          ls -la ${SOURCES_DIR}
-          tar hpvczf ${PACKAGE} --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
-          mkdir ${ARTIFACTS_PATH}
-          cp ${PACKAGE} ${ARTIFACTS_PATH}
+          PACKAGE="${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz"
+          mkdir "${SOURCES_DIR}"
+          rsync -rvt --exclude='.git' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' "${TARGET_DIR}/" "${SOURCES_DIR}/"
+          cp "delivery/delivery-${TARGET_DIR}.sh" "${SOURCES_DIR}"
+          ls -la "${TARGET_DIR}"
+          ls -la "${SOURCES_DIR}"
+          tar hpvczf "${PACKAGE}" "${SOURCES_DIR}"
+          mkdir "${ARTIFACTS_PATH}"
+          cp "${PACKAGE}" "${ARTIFACTS_PATH}"
       - name: Upload back package artifact
         uses: actions/upload-artifact@v4
         env:
