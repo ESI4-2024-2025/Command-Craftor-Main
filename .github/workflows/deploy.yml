@@ -27,7 +27,7 @@ jobs:
           mkdir ${SOURCES_DIR}
           ls -la
           cp -r delivery/delivery-${TARGET_DIR}.sh ${TARGET_DIR} ${SOURCES_DIR}
-          tar -hpczf "${SOURCES_DIR}" --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${PACKAGE}"
+          tar -hpczf "${PACKAGE}" --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
           mkdir "${ARTIFACTS_PATH}"
           cp "${PACKAGE}" "${ARTIFACTS_PATH}"
           ls -la ${ARTIFACTS_PATH}
