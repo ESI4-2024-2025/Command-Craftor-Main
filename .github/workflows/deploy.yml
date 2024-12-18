@@ -19,6 +19,9 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.ORG_TOKEN }}
       - name: Generate slug variables
         uses: rlespinasse/github-slug-action@v5.0.0
       - name: Build package for front
@@ -47,6 +50,9 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.ORG_TOKEN }}
       - name: Generate slug variables
         uses: rlespinasse/github-slug-action@v5.0.0
       - name: Build package for back
