@@ -82,7 +82,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: front-${{ env.GITHUB_REF_SLUG_URL }}
-          path: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+          path: ${{ github.workspace }}/artifacts
       - name: Set up SSH key
         run: |
           test -d ~/.ssh || mkdir ~/.ssh
@@ -96,9 +96,8 @@ jobs:
           PACKAGE=${PACKAGE_NAME}.tar.gz
           ls -la
           ls -la "${ARTIFACTS_PATH}"
-          ls -la "${ARTIFACTS_PATH}/${PACKAGE}"
           scp "${ARTIFACTS_PATH}/${PACKAGE}" "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
-          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME} && ./delivery-${TARGET_DIR}.sh"
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME}/${SOURCES_DIR} && ./delivery-${TARGET_DIR}.sh"
 
   deploy-back:
     name: Deploy Back
@@ -115,7 +114,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: back-${{ env.GITHUB_REF_SLUG_URL }}
-          path: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+          path: ${{ github.workspace }}/artifacts
       - name: Set up SSH key
         run: |
           test -d ~/.ssh || mkdir ~/.ssh
@@ -128,7 +127,7 @@ jobs:
           PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
           PACKAGE=${PACKAGE_NAME}.tar.gz
           scp "${ARTIFACTS_PATH}/${PACKAGE}" "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
-          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME} && ./delivery-${TARGET_DIR}.sh"
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME}/${SOURCES_DIR} && ./delivery-${TARGET_DIR}.sh"
 
   restart-services:
     name: Restart Services
