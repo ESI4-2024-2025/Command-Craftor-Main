@@ -74,8 +74,6 @@ jobs:
     env:
       TARGET_DIR: front
     steps:
-      - name: Checkout project
-        uses: actions/checkout@v4.2.2
       - name: Generate slug variables
         uses: rlespinasse/github-slug-action@v5.0.0
       - name: Download front package artifact
@@ -83,19 +81,16 @@ jobs:
         with:
           name: front-${{ env.GITHUB_REF_SLUG_URL }}
           path: ${{ github.workspace }}/artifacts
-      - name: Set up SSH key
+      - name: Deploy package on VPS
         run: |
           test -d ~/.ssh || mkdir ~/.ssh
           rm -rf ~/.ssh/*
           eval $(ssh-agent -s)
           if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
           echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
-      - name: Deploy package on VPS
-        run: |
+
           PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
           PACKAGE=${PACKAGE_NAME}.tar.gz
-          ls -la
-          ls -la "${ARTIFACTS_PATH}"
           scp "${ARTIFACTS_PATH}/${PACKAGE}" "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME}/${SOURCES_DIR} && ./delivery-${TARGET_DIR}.sh"
 
@@ -106,8 +101,6 @@ jobs:
     env:
       TARGET_DIR: back
     steps:
-      - name: Checkout project
-        uses: actions/checkout@v4.2.2
       - name: Generate slug variables
         uses: rlespinasse/github-slug-action@v5.0.0
       - name: Download back package artifact
@@ -115,15 +108,14 @@ jobs:
         with:
           name: back-${{ env.GITHUB_REF_SLUG_URL }}
           path: ${{ github.workspace }}/artifacts
-      - name: Set up SSH key
+      - name: Deploy package on VPS
         run: |
           test -d ~/.ssh || mkdir ~/.ssh
           rm -rf ~/.ssh/*
           eval $(ssh-agent -s)
           if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
           echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
-      - name: Deploy package on VPS
-        run: |
+
           PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
           PACKAGE=${PACKAGE_NAME}.tar.gz
           scp "${ARTIFACTS_PATH}/${PACKAGE}" "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
@@ -140,16 +132,13 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
-      - name: Set up SSH key
+      - name: Restart services on VPS
         run: |
           test -d ~/.ssh || mkdir ~/.ssh
           rm -rf ~/.ssh/*
           eval $(ssh-agent -s)
           if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
           echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
-      - name: Push package to VPS
-        run: |
+
           scp delivery/${SCRIPT_NAME} "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
-      - name: Deploy package
-        run: |
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "./${SCRIPT_NAME}"
