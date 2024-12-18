@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: front
-      PACKAGE_NAME: ${TARGET_DIR}-${{ github.ref_name }}
-      PACKAGE: ${PACKAGE_NAME}.tar.gz
+      PACKAGE_NAME: front-${{ github.ref_name }}
+      PACKAGE: front-${{ github.ref_name }}.tar.gz
     steps:
       - uses: actions/checkout@v1
       - name: Build package for front
@@ -42,18 +42,18 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: back
-      PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
-      PACKAGE: $PACKAGE_NAME.tar.gz
+      PACKAGE_NAME: back-${{ github.ref_name }}
+      PACKAGE: back-${{ github.ref_name }}.tar.gz
     steps:
       - uses: actions/checkout@v1
       - name: Build package for back
         shell: bash
         run: |
-          mkdir $SOURCES_DIR
-          cp -r delivery/delivery-$TARGET_DIR.sh $TARGET_DIR $SOURCES_DIR
-          tar -hpczf $PACKAGE --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "$SOURCES_DIR"
-          mkdir $ARTIFACTS_PATH
-          cp $PACKAGE $ARTIFACTS_PATH
+          mkdir ${SOURCES_DIR}
+          cp -r delivery/delivery-${TARGET_DIR}.sh ${TARGET_DIR} ${SOURCES_DIR}
+          tar -hpczf ${PACKAGE} --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
+          mkdir ${ARTIFACTS_PATH}
+          cp ${PACKAGE} ${ARTIFACTS_PATH}
       - name: Upload back package artifact
         uses: actions/upload-artifact@v4
         with:
@@ -67,15 +67,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: front
-      PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
-      PACKAGE: $PACKAGE_NAME.tar.gz
+      PACKAGE_NAME: front-${{ github.ref_name }}
+      PACKAGE: front-${{ github.ref_name }}.tar.gz
     steps:
       - uses: actions/checkout@v1
       - name: Download front package artifact
         uses: actions/download-artifact@v4
         with:
-          name: $PACKAGE_NAME
-          path: $ARTIFACTS_PATH/$PACKAGE
+          name: ${PACKAGE_NAME}
+          path: ${ARTIFACTS_PATH}/${PACKAGE}
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -86,7 +86,7 @@ jobs:
           scp $PACKAGE "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
       - name: Deploy package
         run: |
-          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf $PACKAGE && cd ./$PACKAGE_NAME && ./delivery-$TARGET_DIR.sh"
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME} && ./delivery-${TARGET_DIR}.sh"
 
   deploy-back:
     name: Deploy Back
@@ -94,15 +94,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_DIR: back
-      PACKAGE_NAME: $TARGET_DIR-$GITHUB_REF_NAME
-      PACKAGE: $PACKAGE_NAME.tar.gz
+      PACKAGE_NAME: back-${{ github.ref_name }}
+      PACKAGE: back-${{ github.ref_name }}.tar.gz
     steps:
       - uses: actions/checkout@v1
       - name: Download back package artifact
         uses: actions/download-artifact@v4
         with:
-          name: $PACKAGE_NAME
-          path: $ARTIFACTS_PATH/$PACKAGE
+          name: ${PACKAGE_NAME}
+          path: ${ARTIFACTS_PATH}/${PACKAGE}
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -113,7 +113,7 @@ jobs:
           scp $PACKAGE "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
       - name: Deploy package
         run: |
-          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf $PACKAGE && cd ./$PACKAGE_NAME && ./delivery-$TARGET_DIR.sh"
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "tar zxf ${PACKAGE} && cd ./${PACKAGE_NAME} && ./delivery-${TARGET_DIR}.sh"
 
   restart-services:
     name: Restart Services
@@ -123,7 +123,7 @@ jobs:
       - deploy-front
     env:
       SCRIPT_NAME: restart-services.sh
-      SCRIPT_PATH: delivery/$SCRIPT_NAME
+      SCRIPT_PATH: delivery/restart-services.sh
     steps:
       - uses: actions/checkout@v1
       - name: Set up SSH key
@@ -133,7 +133,7 @@ jobs:
           echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add -
       - name: Push package to VPS
         run: |
-          scp $SCRIPT_PATH "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
+          scp ${SCRIPT_PATH} "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
       - name: Deploy package
         run: |
-          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "./$SCRIPT_NAME"
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "./${SCRIPT_NAME}"
