@@ -80,19 +80,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: front-${{ env.GITHUB_REF_SLUG_URL }}
-          path: ${{ github.workspace }}/artifacts
+          path: /
       - name: Transfer package to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          source: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+          source: /front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
           target: "/commandCraftor/sources"
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
         with:
-          command: "tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./front-${{ env.GITHUB_REF_SLUG_URL }}/sources && ./delivery-front.sh"
+          command: "cd /commandCraftor/sources/ && tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./front-${{ env.GITHUB_REF_SLUG_URL }}/sources && ./delivery-front.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
@@ -110,14 +110,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: back-${{ env.GITHUB_REF_SLUG_URL }}
-          path: ${{ github.workspace }}/artifacts
+          path: /
       - name: Transfer package to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          source: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+          source: /back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
           target: "/commandCraftor/sources"
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
@@ -138,13 +138,15 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.2.2
+      - name: Move restart-services script to root
+        run: mv ${{ github.workspace }}/delivery/restart-services.sh /
       - name: Transfer restart-service script to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          source: ${{ github.workspace }}/delivery/restart-services.sh
+          source: /restart-services.sh
           target: "/commandCraftor/sources"
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
