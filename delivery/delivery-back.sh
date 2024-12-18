@@ -39,7 +39,7 @@ echo_and_log "Copying sources into ${RUN_DIR}..."
 _e rsync -rt --partial --delete-after --exclude='.env' "${SOURCES_DIR}/" "${RUN_DIR}/" || exit 1
 
 echo_and_log "Installing dependencies"
-_e pushd "${DEST_DIR}" &> /dev/null || exit 1
+_e pushd "${RUN_DIR}" &> /dev/null || exit 1
 _e npm install --omit=dev || exit 1
 
 _e rm "${SOURCES_DIR}/delivery.lock" || exit 1
