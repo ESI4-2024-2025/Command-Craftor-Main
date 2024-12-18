@@ -92,7 +92,7 @@ jobs:
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
         with:
-          command: "cd /commandCraftor/sources && cp github/workspace/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz ./front && cd front && tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./sources && ./delivery-front.sh"
+          command: "rm -rf /commandCraftor/sources/front/sources && cp github/workspace/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/front && cd /commandCraftor/sources/front && tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd /commandCraftor/sources/front/sources/delivery-front.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
@@ -122,7 +122,7 @@ jobs:
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
         with:
-          command: "cd /commandCraftor/sources && cp github/workspace/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz ./back && cd back && tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd ./sources && ./delivery-back.sh"
+          command: "rm -rf /commandCraftor/sources/back/sources && cp github/workspace/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/back && cd /commandCraftor/sources/back && tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && cd /commandCraftor/sources/back/sources/delivery-back.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
@@ -149,7 +149,7 @@ jobs:
       - name: Deploy package on VPS
         uses: garygrossgarten/github-action-ssh@0.8.0
         with:
-          command: "cd /commandCraftor/sources && mv github/workspace/delivery/restart-services.sh . && ./restart-services.sh"
+          command: "cd /commandCraftor/sources && rm ./restart-services.sh && mv github/workspace/delivery/restart-services.sh . && ./restart-services.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
