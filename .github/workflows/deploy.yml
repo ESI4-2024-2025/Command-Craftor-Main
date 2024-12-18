@@ -13,7 +13,7 @@ env:
 jobs:
   package-front:
     name: Package Front
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       TARGET_DIR: front
     steps:
@@ -44,7 +44,7 @@ jobs:
 
   package-back:
     name: Package Back
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       TARGET_DIR: back
     steps:
@@ -79,7 +79,7 @@ jobs:
   deploy-front:
     name: Deploy Front
     needs: package-front
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       TARGET_DIR: front
     steps:
@@ -113,7 +113,7 @@ jobs:
   deploy-back:
     name: Deploy Back
     needs: package-back
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       TARGET_DIR: back
     steps:
@@ -147,7 +147,7 @@ jobs:
 
   restart-services:
     name: Restart Services
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
       - deploy-back
       - deploy-front
