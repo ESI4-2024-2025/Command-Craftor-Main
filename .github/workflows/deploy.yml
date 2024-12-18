@@ -85,9 +85,11 @@ jobs:
           path: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
       - name: Set up SSH key
         run: |
-          mkdir -p ~/.ssh
+          test -d ~/.ssh || mkdir ~/.ssh
+          rm -rf ~/.ssh/*
+          eval $(ssh-agent -s)
           if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
-          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add -
+          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
       - name: Deploy package on VPS
         run: |
           PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
@@ -113,9 +115,11 @@ jobs:
           path: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
       - name: Set up SSH key
         run: |
-          mkdir -p ~/.ssh
+          test -d ~/.ssh || mkdir ~/.ssh
+          rm -rf ~/.ssh/*
+          eval $(ssh-agent -s)
           if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
-          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add -
+          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
       - name: Deploy package on VPS
         run: |
           PACKAGE_NAME=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
@@ -136,9 +140,11 @@ jobs:
         uses: actions/checkout@v4.2.2
       - name: Set up SSH key
         run: |
-          mkdir -p ~/.ssh
+          test -d ~/.ssh || mkdir ~/.ssh
+          rm -rf ~/.ssh/*
+          eval $(ssh-agent -s)
           if test -n "${{ secrets.VPS_HOST }}"; then ssh-keyscan "${{ secrets.VPS_HOST }}" | tee -a ~/.ssh/known_hosts; fi
-          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add -
+          echo "${{ secrets.VPS_SSH }}" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
       - name: Push package to VPS
         run: |
           scp delivery/${SCRIPT_NAME} "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
