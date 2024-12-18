@@ -31,8 +31,6 @@ jobs:
           tar -hpczf "${PACKAGE}" --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
           mkdir "${ARTIFACTS_PATH}"
           cp "${PACKAGE}" "${ARTIFACTS_PATH}"
-          ls -la ${{ github.workspace }}/artifacts
-          ls -la ${ARTIFACTS_PATH}
       - name: Upload front package artifact
         uses: actions/upload-artifact@v4
         with:
@@ -66,8 +64,8 @@ jobs:
           PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
         with:
           if-no-files-found: error
-          name: ${PACKAGE_NAME}
-          path: ${ARTIFACTS_PATH}/${PACKAGE_NAME}.tar.gz
+          name: back-${{ env.GITHUB_REF_SLUG_URL }}
+          path: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
 
   deploy-front:
     name: Deploy Front
@@ -82,11 +80,9 @@ jobs:
         uses: rlespinasse/github-slug-action@v5.0.0
       - name: Download front package artifact
         uses: actions/download-artifact@v4
-        env:
-          PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
         with:
-          name: ${PACKAGE_NAME}
-          path: ${ARTIFACTS_PATH}/${PACKAGE_NAME}.tar.gz
+          name: front-${{ env.GITHUB_REF_SLUG_URL }}
+          path: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -112,11 +108,9 @@ jobs:
         uses: rlespinasse/github-slug-action@v5.0.0
       - name: Download back package artifact
         uses: actions/download-artifact@v4
-        env:
-          PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
         with:
-          name: ${PACKAGE_NAME}
-          path: ${ARTIFACTS_PATH}/${PACKAGE_NAME}.tar.gz
+          name: back-${{ env.GITHUB_REF_SLUG_URL }}
+          path: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
