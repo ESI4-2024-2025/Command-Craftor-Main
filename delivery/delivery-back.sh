@@ -22,7 +22,7 @@ SOURCES_DIR=/commandCraftor/sources/back/sources
 RUN_DIR=/commandCraftor/command_craftor_API
 
 echo_and_log "Stopping back process..."
-_e fuser -k 3002/tcp || exit 1
+_e fuser -k 3002/tcp
 
 echo_and_log "Copying sources into ${RUN_DIR}..."
 _e rsync -rt --partial --delete-after --exclude='.env' "${SOURCES_DIR}/" "${RUN_DIR}/" || exit 1
