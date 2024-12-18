@@ -18,7 +18,7 @@ function _e() {
      fi
 }
 
-SOURCES_DIR=/commandCraftor/sources/front/sources/front
+SOURCES_DIR=/commandCraftor/sources/front/sources
 RUN_DIR=/commandCraftor/command_craftor
 NGINX_DIR=/var/www/commandcraftor.ebasson.fr
 

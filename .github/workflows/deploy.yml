@@ -99,12 +99,16 @@ jobs:
           source: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
           target: "/commandCraftor/sources"
       - name: Deploy package on VPS
-        uses: garygrossgarten/github-action-ssh@0.8.0
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          command: "rm -rf /commandCraftor/sources/front/sources && cp /commandCraftor/sources/github/workspace/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/front && cd /commandCraftor/sources/front && tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && /commandCraftor/sources/front/sources/delivery-front.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            rm -rf /commandCraftor/sources/front/sources
+            cp /commandCraftor/sources/github/workspace/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/front && cd /commandCraftor/sources/front
+            tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+            /commandCraftor/sources/front/sources/delivery-front.sh
 
   deploy-back:
     name: Deploy Back
@@ -129,12 +133,17 @@ jobs:
           source: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
           target: "/commandCraftor/sources"
       - name: Deploy package on VPS
-        uses: garygrossgarten/github-action-ssh@0.8.0
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          command: "rm -rf /commandCraftor/sources/back/sources && cp /commandCraftor/sources/github/workspace/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/back && cd /commandCraftor/sources/back && tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz && /commandCraftor/sources/back/sources/delivery-back.sh"
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            rm -rf /commandCraftor/sources/back/sources
+            cp /commandCraftor/sources/github/workspace/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/back
+            cd /commandCraftor/sources/back
+            tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+            /commandCraftor/sources/back/sources/delivery-back.sh
 
   restart-services:
     name: Restart Services
