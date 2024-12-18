@@ -26,9 +26,10 @@ jobs:
         run: |
           PACKAGE=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
           mkdir ${SOURCES_DIR}
-          rsync -rt --partial --exclude='.github' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' ${TARGET_DIR} ${SOURCES_DIR}
+          rsync -rvt --partial --exclude='.github' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' ${TARGET_DIR} ${SOURCES_DIR}
           cp delivery/delivery-${TARGET_DIR}.sh ${SOURCES_DIR}
-          tar -hpczf "${PACKAGE}" --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
+          ls -la ${SOURCES_DIR}
+          tar hpczf "${PACKAGE}" --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
           mkdir "${ARTIFACTS_PATH}"
           cp "${PACKAGE}" "${ARTIFACTS_PATH}"
       - name: Upload front package artifact
@@ -53,9 +54,10 @@ jobs:
         run: |
           PACKAGE=${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
           mkdir ${SOURCES_DIR}
-          rsync -rt --partial --exclude='.github' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' ${TARGET_DIR} ${SOURCES_DIR}
+          rsync -rvt --partial --exclude='.github' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' ${TARGET_DIR} ${SOURCES_DIR}
           cp delivery/delivery-${TARGET_DIR}.sh ${SOURCES_DIR}
-          tar -hpczf ${PACKAGE} --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
+          ls -la ${SOURCES_DIR}
+          tar hpvczf ${PACKAGE} --exclude='.git' --exclude='.github' --exclude='Dockerfile' --exclude='README.md' "${SOURCES_DIR}"
           mkdir ${ARTIFACTS_PATH}
           cp ${PACKAGE} ${ARTIFACTS_PATH}
       - name: Upload back package artifact
