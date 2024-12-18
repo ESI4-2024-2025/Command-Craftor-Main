@@ -20,7 +20,8 @@ jobs:
       PACKAGE_NAME: front-${{ github.ref_name }}
       PACKAGE: front-${{ github.ref_name }}.tar.gz
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4.2.2
+      - uses: rlespinasse/github-slug-action@v5.0.0
       - name: Build package for front
         shell: bash
         run: |
@@ -46,7 +47,7 @@ jobs:
       PACKAGE_NAME: back-${{ github.ref_name }}
       PACKAGE: back-${{ github.ref_name }}.tar.gz
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4.2.2
       - name: Build package for back
         shell: bash
         run: |
@@ -71,7 +72,7 @@ jobs:
       PACKAGE_NAME: front-${{ github.ref_name }}
       PACKAGE: front-${{ github.ref_name }}.tar.gz
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4.2.2
       - name: Download front package artifact
         uses: actions/download-artifact@v4
         with:
@@ -98,7 +99,7 @@ jobs:
       PACKAGE_NAME: back-${{ github.ref_name }}
       PACKAGE: back-${{ github.ref_name }}.tar.gz
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4.2.2
       - name: Download back package artifact
         uses: actions/download-artifact@v4
         with:
@@ -126,7 +127,7 @@ jobs:
       SCRIPT_NAME: restart-services.sh
       SCRIPT_PATH: delivery/restart-services.sh
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4.2.2
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
