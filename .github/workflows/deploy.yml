@@ -4,20 +4,173 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - 'v*' # Déclenche l'exécution uniquement pour les tags qui commencent par "v"
+      - 'v**' # Déclenche l'exécution uniquement pour les tags qui commencent par "v" et on 3 nombre avec un point entre chaque
+
+env:
+  ARTIFACTS_PATH: ${{ github.workspace }}/artifacts
+  SOURCES_DIR: sources
 
 jobs:
-  execute-script:
-    name: Execute Script on VPS
-    runs-on: ubuntu-latest
-
+  package-front:
+    name: Package Front
+    runs-on: ubuntu-22.04
+    env:
+      TARGET_DIR: front
     steps:
-      # 1. Exécuter le script sur le VPS
-      - name: Run script on VPS
-        uses: appleboy/ssh-action@v0.1.5
+      - name: Checkout project
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.ORG_TOKEN }}
+      - name: Generate slug variables
+        uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Build package for front
+        shell: bash
+        run: |
+          PACKAGE="${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz"
+          mkdir "${SOURCES_DIR}"
+          rsync -rvt --exclude='.git' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' "${TARGET_DIR}/" "${SOURCES_DIR}/"
+          cp "delivery/delivery-${TARGET_DIR}.sh" "${SOURCES_DIR}"
+          ls -la "${SOURCES_DIR}"
+          tar hpczf "${PACKAGE}" "${SOURCES_DIR}"
+          mkdir "${ARTIFACTS_PATH}"
+          cp "${PACKAGE}" "${ARTIFACTS_PATH}"
+      - name: Upload front package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: front-${{ env.GITHUB_REF_SLUG_URL }}
+          path: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+
+  package-back:
+    name: Package Back
+    runs-on: ubuntu-22.04
+    env:
+      TARGET_DIR: back
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.ORG_TOKEN }}
+      - name: Generate slug variables
+        uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Build package for back
+        shell: bash
+        run: |
+          PACKAGE="${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz"
+          mkdir "${SOURCES_DIR}"
+          rsync -rvt --exclude='.git' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' "${TARGET_DIR}/" "${SOURCES_DIR}/"
+          cp "delivery/delivery-${TARGET_DIR}.sh" "${SOURCES_DIR}"
+          ls -la "${TARGET_DIR}"
+          ls -la "${SOURCES_DIR}"
+          tar hpvczf "${PACKAGE}" "${SOURCES_DIR}"
+          mkdir "${ARTIFACTS_PATH}"
+          cp "${PACKAGE}" "${ARTIFACTS_PATH}"
+      - name: Upload back package artifact
+        uses: actions/upload-artifact@v4
+        env:
+          PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
+        with:
+          if-no-files-found: error
+          name: back-${{ env.GITHUB_REF_SLUG_URL }}
+          path: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+
+  deploy-front:
+    name: Deploy Front
+    needs: package-front
+    runs-on: ubuntu-22.04
+    env:
+      TARGET_DIR: front
+    steps:
+      - name: Generate slug variables
+        uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Download front package artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: front-${{ env.GITHUB_REF_SLUG_URL }}
+          path: ${{ github.workspace }}/artifacts
+      - name: Transfer package to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+          target: "/commandCraftor/sources"
+      - name: Deploy package on VPS
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            bash ~/scripts/deployCommandCraftorAll.sh
+            rm -rf /commandCraftor/sources/front/sources
+            mv /commandCraftor/sources/github/workspace/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/front && cd /commandCraftor/sources/front
+            tar zxf front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+            /commandCraftor/sources/front/sources/delivery-front.sh
+
+  deploy-back:
+    name: Deploy Back
+    needs: package-back
+    runs-on: ubuntu-22.04
+    env:
+      TARGET_DIR: back
+    steps:
+      - name: Generate slug variables
+        uses: rlespinasse/github-slug-action@v5.0.0
+      - name: Download back package artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: back-${{ env.GITHUB_REF_SLUG_URL }}
+          path: ${{ github.workspace }}/artifacts
+      - name: Transfer package to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+          target: "/commandCraftor/sources"
+      - name: Deploy package on VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            rm -rf /commandCraftor/sources/back/sources
+            mv /commandCraftor/sources/github/workspace/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz /commandCraftor/sources/back
+            cd /commandCraftor/sources/back
+            tar zxf back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+            /commandCraftor/sources/back/sources/delivery-back.sh
+
+  restart-services:
+    name: Restart Services
+    runs-on: ubuntu-22.04
+    needs:
+      - deploy-back
+      - deploy-front
+    env:
+      SCRIPT_NAME: restart-services.sh
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4.2.2
+      - name: Transfer restart-service script to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: ${{ github.workspace }}/delivery/restart-services.sh
+          target: "/commandCraftor/sources"
+      - name: Restart services on VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd /commandCraftor/sources
+            mv ./github/workspace/delivery/restart-services.sh .
+            ./restart-services.sh
