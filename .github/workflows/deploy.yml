@@ -11,88 +11,10 @@ env:
   SOURCES_DIR: sources
 
 jobs:
-  package-front:
-    name: Package Front
-    runs-on: ubuntu-22.04
-    env:
-      TARGET_DIR: front
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4.2.2
-        with:
-          submodules: 'true'
-          token: ${{ secrets.ORG_TOKEN }}
-      - name: Generate slug variables
-        uses: rlespinasse/github-slug-action@v5.0.0
-      - name: Build package for front
-        shell: bash
-        run: |
-          PACKAGE="${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz"
-          mkdir "${SOURCES_DIR}"
-          rsync -rvt --exclude='.git' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' "${TARGET_DIR}/" "${SOURCES_DIR}/"
-          tar hpczf "${PACKAGE}" "${SOURCES_DIR}"
-          mkdir "${ARTIFACTS_PATH}"
-          cp "${PACKAGE}" "${ARTIFACTS_PATH}"
-      - name: Upload front package artifact
-        uses: actions/upload-artifact@v4
-        with:
-          if-no-files-found: error
-          name: front-${{ env.GITHUB_REF_SLUG_URL }}
-          path: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
-
-  package-back:
-    name: Package Back
-    runs-on: ubuntu-22.04
-    env:
-      TARGET_DIR: back
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4.2.2
-        with:
-          submodules: 'true'
-          token: ${{ secrets.ORG_TOKEN }}
-      - name: Generate slug variables
-        uses: rlespinasse/github-slug-action@v5.0.0
-      - name: Build package for back
-        shell: bash
-        run: |
-          PACKAGE="${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz"
-          mkdir "${SOURCES_DIR}"
-          rsync -rvt --exclude='.git' --exclude='.github' --exclude='.env.exemple' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' "${TARGET_DIR}/" "${SOURCES_DIR}/"
-          tar hpvczf "${PACKAGE}" "${SOURCES_DIR}"
-          mkdir "${ARTIFACTS_PATH}"
-          cp "${PACKAGE}" "${ARTIFACTS_PATH}"
-      - name: Upload back package artifact
-        uses: actions/upload-artifact@v4
-        env:
-          PACKAGE_NAME: ${TARGET_DIR}-${{ env.GITHUB_REF_SLUG_URL }}
-        with:
-          if-no-files-found: error
-          name: back-${{ env.GITHUB_REF_SLUG_URL }}
-          path: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
-
   deploy-front:
     name: Deploy Front
-    needs: package-front
     runs-on: ubuntu-22.04
-    env:
-      TARGET_DIR: front
     steps:
-      - name: Generate slug variables
-        uses: rlespinasse/github-slug-action@v5.0.0
-      - name: Download front package artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: front-${{ env.GITHUB_REF_SLUG_URL }}
-          path: ${{ github.workspace }}/artifacts
-      - name: Transfer package to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          source: ${{ github.workspace }}/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
-          target: "/var/installations/commandCraftor/sources"
       - name: Deploy package on VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -100,35 +22,13 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            cd /var/installations/commandCraftor/sources/github/workspace/artifacts
-            tar zxf ./front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
-            rsync -rvt --delete --exclude='.git' --exclude='.github' --exclude='.env' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' sources/ /var/installations/commandCraftor/front/
-            rm -rf sources
             cd /var/installations/commandCraftor/front
             npm run updateDeploy
 
   deploy-back:
     name: Deploy Back
-    needs: package-back
     runs-on: ubuntu-22.04
-    env:
-      TARGET_DIR: back
     steps:
-      - name: Generate slug variables
-        uses: rlespinasse/github-slug-action@v5.0.0
-      - name: Download back package artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: back-${{ env.GITHUB_REF_SLUG_URL }}
-          path: ${{ github.workspace }}/artifacts
-      - name: Transfer package to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          source: ${{ github.workspace }}/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
-          target: "/var/installations/commandCraftor/sources"
       - name: Deploy package on VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -136,9 +36,5 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            cd /var/installations/commandCraftor/sources/github/workspace/artifacts
-            tar zxf ./back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
-            rsync -rvt --delete --exclude='.git' --exclude='.github' --exclude='.env' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' sources/ /var/installations/commandCraftor/back/
-            rm -rf sources
             cd /var/installations/commandCraftor/back
             npm run updateDeploy
