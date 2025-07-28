@@ -100,9 +100,11 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            cd /var/installations/commandCraftor
-            tar zxf ./sources/github/workspace/artifacts/front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz front
-            cd front
+            cd /var/installations/commandCraftor/sources/github/workspace/artifacts
+            tar zxf ./front-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+            rsync -rvt --delete --exclude='.git' --exclude='.github' --exclude='.env' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' sources/ /var/installations/commandCraftor/front/
+            rm -rf sources
+            cd /var/installations/commandCraftor/front
             npm run updateDeploy
 
   deploy-back:
@@ -134,35 +136,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            cd /var/installations/commandCraftor
-            tar zxf ./sources/github/workspace/artifacts/back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz back
-            cd back
+            cd /var/installations/commandCraftor/sources/github/workspace/artifacts
+            tar zxf ./back-${{ env.GITHUB_REF_SLUG_URL }}.tar.gz
+            rsync -rvt --delete --exclude='.git' --exclude='.github' --exclude='.env' --exclude='.gitignore' --exclude='Dockerfile' --exclude='README.md' sources/ /var/installations/commandCraftor/back/
+            rm -rf sources
+            cd /var/installations/commandCraftor/back
             npm run updateDeploy
-
-  restart-services:
-    name: Restart Services
-    runs-on: ubuntu-22.04
-    needs:
-      - deploy-back
-      - deploy-front
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4.2.2
-      - name: Transfer restart-service script to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          source: ${{ github.workspace }}/delivery/restart-services.sh
-          target: "/var/installations/commandCraftor/sources"
-      - name: Restart services on VPS
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          script: |
-            cd /var/installations/commandCraftor/sources
-            mv ./github/workspace/delivery/restart-services.sh .
-            ./restart-services.sh
